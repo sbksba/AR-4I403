@@ -172,82 +172,135 @@ espace *decoupe(noeud *a)
     }
 }
 
+void printEspace(noeud *noeud)
+{
+  printf("#%d   [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",noeud->id,noeud->es->a.x,noeud->es->a.y,noeud->es->ap.x,noeud->es->ap.y,noeud->es->b.x,noeud->es->b.y,noeud->es->bp.x,noeud->es->bp.y);
+}
+
+noeud *attributionEspace(noeud *noeud, espace *espace)
+{
+  noeud->es->a = espace->a;
+  noeud->es->ap = espace->ap;
+  noeud->es->b = espace->b;
+  noeud->es->bp = espace->bp;
+
+  return noeud;
+}
+
+void printPlanGnuplotI(int max)
+{
+  printf("\n#!/bin/gnuplot\nset terminal png\nset output \"Plan.png\"\nset boxwidth 0.75 absolute\nset xtic auto # set xtics automatically\nset ytic auto # set ytics automatically\nset title \"Plan\"\nset xlabel \"X\"\nset ylabel \"Y\"\nset xr [0:%d]\nset yr [0:%d]\n",max);
+}
+
+void printRect(noeud *noeud)
+{
+  printf("set object %d rect from %d,%d to %d,%d fc rgb \"white\"\n",noeud->id, noeud->es->b.x, noeud->es->b.y, noeud->es->ap.x, noeud->es->ap.y);
+}
+
+void printPlanGnuplotII()
+{
+  printf("set offset 1,1,1,1\nplot 'dot.dat' using 1:2:(sprintf(\"(%d, %d)\", $1, $2)) with labels point  pt 7 offset char 1,1 notitle\n");
+}
+
 int main (int argc, char **argv) {
 
-  point p1;
-  p1.x = 0;
-  p1.y = 8;
+  point p1, p2, p3, p4;
   
-  point p2;
-  p2.x = 8;
-  p2.y = 8;
-  
-  point p3;
-  p3.x = 0;
-  p3.y = 0;
-
-  point p4;
-  p4.x = 8;
-  p4.y = 0;
+  p1.x = 0; p1.y = 8;
+  p2.x = 8; p2.y = 8;
+  p3.x = 0; p3.y = 0;
+  p4.x = 8; p4.y = 0;
 
   noeud *a = initNoeud(1);
-  a->es->a = p1;
+  a->p->x = 2; a->p->y = 5;
+  
+  a->es->a  = p1;
   a->es->ap = p2;
-  a->es->b = p3;
+  a->es->b  = p3;
   a->es->bp = p4;
-  printf("Création d'un noeud : [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",a->es->a.x,a->es->a.y,a->es->ap.x,a->es->ap.y,a->es->b.x,a->es->b.y,a->es->bp.x,a->es->bp.y);
+  
+  printf("Espace d'origine : [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",a->es->a.x,a->es->a.y,a->es->ap.x,a->es->ap.y,a->es->b.x,a->es->b.y,a->es->bp.x,a->es->bp.y);
     
   noeud *b = initNoeud(2);
-  b->p->x = 5;
-  b->p->y = 1;
+  b->p->x = 5; b->p->y = 1;
 
   noeud *c = initNoeud(3);
-  c->p->x = 7;
-  c->p->y = 7;
+  c->p->x = 7; c->p->y = 7;
   
   noeud *d = initNoeud(4);
-  d->p->x = 3;
-  d->p->y = 1;
+  d->p->x = 3; d->p->y = 1;
 
-  a->p->x = 2;
-  a->p->y = 5;
-  printf("A noeud %d de coordonnées (%d, %d)\n", a->id, a->p->x, a->p->y);
+  noeud *e = initNoeud(5);
+  e->p->x = 7; e->p->y = 3;
+  
+  printf("\nA noeud %d de coordonnées (%d, %d)\n", a->id, a->p->x, a->p->y);
   printf("B noeud %d de coordonnées (%d, %d)\n", b->id, b->p->x, b->p->y);
   printf("C noeud %d de coordonnées (%d, %d)\n", c->id, c->p->x, c->p->y);
   printf("D noeud %d de coordonnées (%d, %d)\n", d->id, d->p->x, d->p->y);
+  printf("E noeud %d de coordonnées (%d, %d)\n", e->id, e->p->x, e->p->y);
   
   if (estDansEspace(a->es, b) == TRUE)
-    printf("EST DANS\n");
+    printf("\nB est dans l'espace de A\n");
+  else
+    printf("\nB n'est pas dans l'espace de A\n");
   
   if (maxEspace(a->es) == HORIZONTAL)
-    printf("MAX ESPACE : HORIZONTAL\n");
+    printf("\nMAX ESPACE : HORIZONTAL\n");
   else
-    printf("MAX ESPACE : VERTICAL\n");
+    printf("\nMAX ESPACE : VERTICAL\n");
 
   espace *espaceB = malloc(sizeof(espace));
   espace *espaceC = malloc(sizeof(espace));
   espace *espaceD = malloc(sizeof(espace));
-    
-  printf("ORI [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",a->es->a.x,a->es->a.y,a->es->ap.x,a->es->ap.y,a->es->b.x,a->es->b.y,a->es->bp.x,a->es->bp.y);
+  espace *espaceE = malloc(sizeof(espace));
+  
+  printEspace(a);
   
   espaceB = decoupe(a);
-  printf("B   [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",espaceB->a.x,espaceB->a.y,espaceB->ap.x,espaceB->ap.y,espaceB->b.x,espaceB->b.y,espaceB->bp.x,espaceB->bp.y);
-
-  b->es->a = espaceB->a;
-  b->es->ap = espaceB->ap;
-  b->es->b = espaceB->b;
-  b->es->bp = espaceB->bp;
+  b = attributionEspace(b,espaceB);
+  printEspace(b);
+  printEspace(a);
 
   espaceC = decoupe(b);
-  printf("C   [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",espaceC->a.x,espaceC->a.y,espaceC->ap.x,espaceC->ap.y,espaceC->b.x,espaceC->b.y,espaceC->bp.x,espaceC->bp.y);
-
-  printf("A   [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",a->es->a.x,a->es->a.y,a->es->ap.x,a->es->ap.y,a->es->b.x,a->es->b.y,a->es->bp.x,a->es->bp.y);
-
+  c = attributionEspace(c,espaceC);
+  printEspace(c);
+  printEspace(a);
+  
   espaceD = decoupe(a);
-  printf("D   [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",espaceD->a.x,espaceD->a.y,espaceD->ap.x,espaceD->ap.y,espaceD->b.x,espaceD->b.y,espaceD->bp.x,espaceD->bp.y);
+  d = attributionEspace(d,espaceD);
+  printEspace(d);
+  printEspace(a);
 
-  printf("A   [ (%d,%d) (%d,%d) (%d,%d) (%d,%d) ]\n",a->es->a.x,a->es->a.y,a->es->ap.x,a->es->ap.y,a->es->b.x,a->es->b.y,a->es->bp.x,a->es->bp.y);
+  espaceE = decoupe(b);
+  e = attributionEspace(e,espaceE);
+  printEspace(e);
+  printEspace(b);
 
+  if (estDansEspace(a->es, b) == TRUE)
+    printf("\nB est dans l'espace de A\n");
+  else
+    printf("\nB n'est pas dans l'espace de A\n");
+
+  if (estDansEspace(a->es, c) == TRUE)
+    printf("C est dans l'espace de A\n");
+  else
+    printf("C n'est pas dans l'espace de A\n");
+
+  if (estDansEspace(a->es, d) == TRUE)
+    printf("D est dans l'espace de A\n");
+  else
+    printf("D n'est pas dans l'espace de A\n");
+
+  /* GNUPLOT */
+  /*
+    printPlanGnuplotI(8);
+    printRect(a);
+    printRect(b);
+    printRect(c);
+    printRect(d);
+    printRect(e);
+    printPlanGnuplotII();
+  */
   return EXIT_SUCCESS;
 }
 
